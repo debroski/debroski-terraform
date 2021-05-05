@@ -1,5 +1,5 @@
 terraform {
-  required_version = "0.14.4"
+  required_version = "0.15.1"
 
   required_providers {
     aws = {
@@ -11,13 +11,16 @@ terraform {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 provider "aws" {
-  region  = "eu-central-1" # Brasil -> us-east-1
+  # as credenciais podem ser inseridas manualmente ou via cli aws
+  #access_key = ""
+  #secret_key = ""
+  region  = "us-east-1"
   profile = "tf014"
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket#private-bucket-w-tags
 resource "aws_s3_bucket" "my-test-bucket" {
-  bucket = "my-tf-test-bucket-123123455745642342342"
+  bucket = "tf-test-donizete123"
   acl    = "private"
 
   tags = {
