@@ -1,0 +1,73 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.27"
+    }
+  }
+}
+
+provider "aws" {
+  region  = "sa-east-1"
+}
+
+resource "aws_ecs_task_definition" "task_definition" {
+  family             = terraform.workspace
+  task_role_arn      = "arn:aws:iam::792740635854:role/ecsTaskExecutionRole"
+  execution_role_arn = "arn:aws:iam::792740635854:role/ecsTaskExecutionRole"
+  memory             = "0"
+  cpu                = "256"
+
+  container_definitions = <<DEFINITION
+[
+  {
+    "name": "job-${terraform.workspace}",
+    "image": "792740635854.dkr.ecr.sa-east-1.amazonaws.com/magazord-jobs:latest",
+    "cpu": 0,
+    "environment": [
+        {
+            "name": "faderim_app",
+            "value": "${terraform.workspace}.php"
+        },
+        {
+            "name": "zord_cliente",
+            "value": "${terraform.workspace}"
+        }
+    ],
+    "mountPoints": [
+          {
+              "containerPath": "/var/log/magazord",
+              "sourceVolume": "efs-logs"
+          }
+      ],
+    "secrets": [
+        {
+            "name": "AWS_ACCESS_KEY",
+            "valueFrom": "clusterAwsAccessKey"
+        },
+        {
+            "name": "AWS_SECRET_ACCESS_KEY",
+            "valueFrom": "clusterAwsSecretKey"
+        }
+    ],
+    "privileged": true
+  }
+]
+DEFINITION
+  volume {
+    name      = "efs-logs"
+    efs_volume_configuration {
+      file_system_id = "fs-965d309b"
+      root_directory = "/${terraform.workspace}"
+    }
+  }
+}
+
+resource "aws_ecs_service" "service" {
+  name            = "${terraform.workspace}-jobs"
+  cluster         = "arn:aws:ecs:sa-east-1:792740635854:cluster/cluster-admin-jobs"
+  task_definition = aws_ecs_task_definition.task_definition.arn
+  depends_on      = [aws_ecs_task_definition.task_definition]
+  desired_count   = 1
+  launch_type     = "EC2"
+}
