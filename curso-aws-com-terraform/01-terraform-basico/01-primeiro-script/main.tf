@@ -12,8 +12,8 @@ terraform {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 provider "aws" {
   # as credenciais podem ser inseridas manualmente ou via cli aws
-  access_key = "AKIAQIR2NS6S7GKENXF2"
-  secret_key = "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"
+  access_key = ""
+  secret_key = ""
   region     = "us-east-1"
   profile    = "tf014"
 }
